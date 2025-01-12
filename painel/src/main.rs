@@ -1,3 +1,6 @@
-fn main() {
-    println!("Hello, world!");
+mod app;
+mod entry;
+
+fn main() -> eframe::Result {
+    entry::nonwasm::main()
 }
