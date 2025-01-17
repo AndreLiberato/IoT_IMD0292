@@ -1,0 +1,36 @@
+{
+  "name": "iot-location-tracker", // Nome do projeto, indicando que se trata de um rastreador de localização para IoT.
+  "version": "1.0.0",             // Versão inicial do projeto seguindo o padrão SemVer.
+  "private": true,                // Define o projeto como privado, impedindo sua publicação acidental no npm.
+  "dependencies": {               // Lista de dependências necessárias para o funcionamento do projeto.
+    "axios": "^1.3.4",            // Axios para realizar requisições HTTP.
+    "mqtt": "^4.3.7",             // Biblioteca MQTT para comunicação com dispositivos IoT.
+    "react": "^18.2.0",           // Biblioteca React para construção da interface do usuário.
+    "react-dom": "^18.2.0",       // Biblioteca React para manipulação do DOM.
+    "react-scripts": "5.0.1"      // Scripts padrão para configuração e execução de um projeto React.
+  },
+  "scripts": {                    // Scripts para gerenciar tarefas comuns no projeto.
+    "start": "react-scripts start",  // Inicia o servidor de desenvolvimento.
+    "build": "react-scripts build",  // Compila o aplicativo para produção.
+    "test": "react-scripts test",    // Executa os testes configurados.
+    "eject": "react-scripts eject"   // Expõe a configuração do projeto, permitindo personalizações avançadas.
+  },
+  "eslintConfig": {               // Configurações para o ESLint, uma ferramenta de análise de código.
+    "extends": [                  // Estende as regras padrão do React e Jest.
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {               // Define os navegadores-alvo para produção e desenvolvimento.
+    "production": [               // Configuração para o ambiente de produção.
+      ">0.2%",                    // Suporta navegadores usados por mais de 0.2% dos usuários globais.
+      "not dead",                 // Exclui navegadores que não têm mais suporte ou atualizações.
+      "not op_mini all"           // Exclui todas as versões do Opera Mini.
+    ],
+    "development": [              // Configuração para o ambiente de desenvolvimento.
+      "last 1 chrome version",    // Suporta apenas a última versão do Chrome.
+      "last 1 firefox version",   // Suporta apenas a última versão do Firefox.
+      "last 1 safari version"     // Suporta apenas a última versão do Safari.
+    ]
+  }
+}

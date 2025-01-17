@@ -1,0 +1,9 @@
+.App {
+  font-family: Arial, sans-serif; /* Define a fonte principal como Arial, com fallback para fontes sem serifa. */
+  text-align: center;            /* Centraliza o texto horizontalmente dentro do container. */
+  margin: 20px;                  /* Adiciona uma margem de 20px ao redor do elemento. */
+}
+
+h1, h2 {
+  color: #333;                   /* Define a cor do texto como um cinza escuro (#333) para melhorar a legibilidade. */
+}
