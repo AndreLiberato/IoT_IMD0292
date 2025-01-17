@@ -1,0 +1,7 @@
+## Link para o download do APK.
+https://drive.google.com/file/d/1KLG2GUC9bQ703jiyc9YC0SZQ2o9CzBUw/view?usp=sharing
+
+Esse aplicativo localiza o dispositivo do usuário, e mostra no maps. Após selecionar a opção principal da navbar (Aquela de cor destacada que tem ícone de alfinete) é mostrado um modal. 
+No modal você deve preencher o endereço IP do broker que será utilizado e clicar em Adicionar rota.(Deixe o espaço de adicionar linha em branco.) 
+Após isso, o app se conectará via MQTT com o broker e a cada 30 segundos enviará a localização atual do dispositivo do usuário para aqueles
+que estiverem como subscribers do tópico "linhaOnibus".
