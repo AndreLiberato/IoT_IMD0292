@@ -1,0 +1,42 @@
+#!/bin/bash -i
+
+set -e
+
+APP_ROOT=$(git rev-parse --show-toplevel)
+cd "$APP_ROOT"
+
+CONFIG_DIR="$1"
+if [ -z "$CONFIG_DIR" ]; then
+    cat <<EOS
+$0 must specify build config directory
+e.g.
+    $0 builds/planet
+    $0 builds/seattle
+EOS
+    exit 1
+fi
+shift
+
+if [ ! -d "$CONFIG_DIR" ]; then
+    cat <<EOS
+Config dir "$CONFIG_DIR" doesn't exist
+EOS
+    exit 1
+fi
+
+set -o nounset
+
+EARTHLY_ARGS=${@:1}
+
+TRANSIT_CONFIG_DIR="$CONFIG_DIR/transit"
+
+source "${CONFIG_DIR}/env.sh"
+
+TRANSIT_ZONES=$(ls ${TRANSIT_CONFIG_DIR}/*.gtfs_feeds.csv)
+
+OTP_BUILD_CONFIG="${TRANSIT_CONFIG_DIR}/build-config.json"
+if [ ! -f "$OTP_BUILD_CONFIG" ]; then
+    OTP_BUILD_CONFIG=""
+fi
+
+earthly ${EARTHLY_ARGS} +save-transit-zones --area="$HEADWAY_AREA" --transit_zones="$TRANSIT_ZONES" --otp_build_config="$OTP_BUILD_CONFIG"

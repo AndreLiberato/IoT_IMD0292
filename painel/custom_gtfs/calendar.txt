@@ -1,0 +1,3 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+Inverso,1,1,1,1,1,1,1,20111019,20251130
+ExpressoC&T,1,1,1,1,1,1,1,20111019,20251130

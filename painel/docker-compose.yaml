@@ -1,0 +1,195 @@
+version: "3"
+services:
+  tileserver-init:
+    image: ghcr.io/headwaymaps/tileserver-init:latest
+    env_file: .env
+    environment:
+      AREAMAP_ARTIFACT_DEST: /data/${HEADWAY_AREA}.mbtiles
+      AREAMAP_ARTIFACT_SOURCE: /bootstrap/${HEADWAY_AREA}.mbtiles
+      TERRAIN_ARTIFACT_DEST: /data/terrain.mbtiles
+      TERRAIN_ARTIFACT_SOURCE: /bootstrap/terrain.mbtiles
+      LANDCOVER_ARTIFACT_DEST: /data/landcover.mbtiles
+      LANDCOVER_ARTIFACT_SOURCE: /bootstrap/landcover.mbtiles
+    volumes:
+      - "./data/:/bootstrap/:ro"
+      - "tileserver_data:/data/:rw"
+  tileserver:
+    image: ghcr.io/headwaymaps/tileserver:latest
+    restart: always
+    env_file: .env
+    environment:
+      PORT: 8000
+    volumes:
+      - "tileserver_data:/data/:ro"
+    depends_on:
+      tileserver-init:
+        condition: service_completed_successfully
+    expose:
+      - "8000"
+    networks:
+      - tileserver_frontend
+  travelmux:
+    image: ghcr.io/headwaymaps/travelmux:latest
+    restart: always
+    env_file: .env
+    networks:
+      - travel_frontend
+      - valhalla_backend
+    command: ["http://valhalla:8002"]
+  valhalla-init:
+    image: ghcr.io/headwaymaps/valhalla-init:latest
+    env_file: .env
+    volumes:
+      - "valhalla_data:/data/:rw"
+      - "./data/:/bootstrap/:ro"
+    environment:
+      VALHALLA_ARTIFACT_SOURCE_PATH: /bootstrap/${HEADWAY_AREA}.valhalla.tar.zst
+    ulimits:
+      nofile:
+        soft: 8192
+        hard: 8192
+  valhalla:
+    image: ghcr.io/headwaymaps/valhalla:latest
+    restart: always
+    env_file: .env
+    networks:
+      - valhalla_backend
+    volumes:
+      - "valhalla_data:/data/:ro"
+    ulimits:
+      nofile:
+        soft: 8192
+        hard: 8192
+    depends_on:
+      valhalla-init:
+        condition: service_completed_successfully
+    # ports:
+    #   - "9002:8002"
+  frontend-init:
+    image: ghcr.io/headwaymaps/headway-init:latest
+    env_file: .env
+    volumes:
+      - "./data/:/bootstrap/:ro"
+      - "frontend_data:/data/:rw"
+  frontend:
+    image: ghcr.io/headwaymaps/headway:latest
+    restart: always
+    env_file: .env
+    environment:
+      HEADWAY_RESOLVER: 127.0.0.11
+      HEADWAY_PELIAS_URL: http://pelias-api:4000
+      HEADWAY_TILESERVER_URL: http://tileserver:8000
+      HEADWAY_TRAVELMUX_URL: http://travelmux:8000
+    ports:
+      - "8080:8080"
+    networks:
+      - pelias_frontend
+      - tileserver_frontend
+      - travel_frontend
+    volumes:
+      - "frontend_data:/data/:ro"
+    depends_on:
+      - "pelias-api"
+      - "tileserver"
+      - "travelmux"
+      - "valhalla"
+  pelias-config-init:
+    image: ghcr.io/headwaymaps/pelias-init:latest
+    env_file: .env
+    environment:
+      PELIAS_CONFIG_ARTIFACT_SOURCE_PATH: /bootstrap/${HEADWAY_AREA}.pelias.json
+    command: [ "/bin/bash", "/app/init_config.sh" ]
+    volumes:
+      - "./data/:/bootstrap/:ro"
+      - "pelias_config_data:/config"
+  pelias-elasticsearch-init:
+    image: ghcr.io/headwaymaps/pelias-init:latest
+    env_file: .env
+    environment:
+      ELASTICSEARCH_ARTIFACT_SOURCE_PATH: /bootstrap/${HEADWAY_AREA}.elasticsearch.tar.zst
+    command: [ "/bin/bash", "/app/init_elastic.sh" ]
+    volumes:
+      - "./data/:/bootstrap/:ro"
+      - "pelias_elasticsearch_data:/usr/share/elasticsearch/data"
+  pelias-placeholder-init:
+    image: ghcr.io/headwaymaps/pelias-init:latest
+    env_file: .env
+    environment:
+      PLACEHOLDER_ARTIFACT_SOURCE_PATH: /bootstrap/${HEADWAY_AREA}.placeholder.tar.zst
+    command: [ "/bin/bash", "/app/init_placeholder.sh" ]
+    volumes:
+      - "./data/:/bootstrap/:ro"
+      - "pelias_placeholder_data:/data/placeholder"
+  pelias-libpostal:
+    image: pelias/libpostal-service
+    restart: always
+    networks:
+      - pelias_backend
+  pelias-api:
+    image: pelias/api:master
+    restart: always
+    environment:
+      PORT: 4000
+      PELIAS_CONFIG: /config/pelias.json
+    networks:
+      - pelias_backend
+      - pelias_frontend
+    volumes:
+      - "pelias_config_data:/config:ro"
+    depends_on:
+      pelias-elasticsearch:
+        condition: service_healthy
+      pelias-config-init:
+        condition: service_completed_successfully
+  pelias-placeholder:
+    image: pelias/placeholder:master
+    restart: always
+    environment:
+      PORT: 4100
+    networks:
+      - pelias_backend
+    volumes:
+      - "pelias_config_data:/config:ro"
+      - "pelias_placeholder_data:/data/placeholder"
+    depends_on:
+      pelias-config-init:
+        condition: service_completed_successfully
+      pelias-placeholder-init:
+        condition: service_completed_successfully
+  pelias-elasticsearch:
+    image: pelias/elasticsearch:8.12.2-beta
+    restart: always
+    networks:
+      - pelias_backend
+    volumes:
+      - "pelias_elasticsearch_data:/usr/share/elasticsearch/data"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add: [ "IPC_LOCK" ]
+    depends_on:
+      pelias-elasticsearch-init:
+        condition: service_completed_successfully
+      pelias-config-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: nc -z localhost 9200
+      interval: 5s
+      start_period: 60s
+networks:
+  tileserver_frontend:
+  pelias_frontend:
+  pelias_backend:
+  travel_frontend:
+  valhalla_backend:
+volumes:
+  pelias_config_data:
+  pelias_placeholder_data:
+  pelias_elasticsearch_data:
+  tileserver_data:
+  valhalla_data:
+  frontend_data:

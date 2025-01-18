@@ -1,0 +1,75 @@
+worker_processes  5;  ## Default: 1
+#error_log  logs/error.log; Headway doesn't log whenever possible.
+worker_rlimit_nofile 8192;
+
+events {
+  worker_connections  4096;  ## Default: 1024
+}
+
+http {
+  index    index.html;
+  root /usr/share/nginx/html/;
+  include mime.types;
+
+  sendfile     on;
+  tcp_nopush   on;
+  server_names_hash_bucket_size 128; # this seems to be required for some vhosts
+
+  proxy_http_version 1.1;
+
+  log_format apm '[a] time="$time_local" req_id=$request_id client=$remote_addr '
+                 'method=$request_method request="$request" '
+                 'request_length=$request_length '
+                 'status=$status bytes_sent=$bytes_sent '
+                 'body_bytes_sent=$body_bytes_sent '
+                 'referer=$http_referer '
+                 'user_agent="$http_user_agent" '
+                 'upstream_addr=$upstream_addr '
+                 'upstream_status=$upstream_status '
+                 'request_time=$request_time '
+                 'upstream_response_time=$upstream_response_time '
+                 'upstream_connect_time=$upstream_connect_time '
+                 'upstream_header_time=$upstream_header_time';
+
+  server {
+    access_log /var/log/nginx/access.log apm;
+    resolver ${HEADWAY_RESOLVER};
+    listen ${HEADWAY_HTTP_PORT} default_server;
+
+    location ^~ /pelias/  {
+      proxy_pass      ${HEADWAY_PELIAS_URL}/;
+    }
+
+    location ^~ /travelmux/ {
+      proxy_pass      ${HEADWAY_TRAVELMUX_URL}/;
+    }
+
+    location ^~ /tileserver/  {
+      expires 1h;
+      proxy_pass       ${HEADWAY_TILESERVER_URL}/;
+    }
+
+    location ^~ /static/  {
+      alias ${HEADWAY_SHARED_VOL}/;
+      expires 5m;
+      add_header Cache-Control "public";
+    }
+
+    location / {
+      try_files ${ESC}uri /index.html;
+      # From https://quasar.dev/quasar-cli-vite/developing-spa/deploying/
+      #
+      # > It’s important that you do not allow browsers to cache the index.html file.
+      # > Because otherwise updates to this file or to your app might slip through the cracks
+      # > for browsers that load the index.html from cache.
+      add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+
+    location ~* \.(?:css|js|jpg|png|svg|woff|woff2)$ {
+      expires 30d;
+      # We aggressively cache assets, since our asset URLs contain a
+      # cache-buster
+      add_header Cache-Control "public";
+    }
+  }
+}

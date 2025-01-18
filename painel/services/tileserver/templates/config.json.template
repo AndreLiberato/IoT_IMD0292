@@ -1,0 +1,26 @@
+{
+  "options": {
+    "paths": {
+      "mbtiles": "/data",
+      "fonts": "fonts",
+      "sprites": "sprites",
+      "styles": "styles"
+    }
+  },
+  "styles": {
+    "basic": {
+      "style": "basic/style.json"
+    }
+  },
+  "data": {
+    "default": {
+      "mbtiles": "${HEADWAY_AREA}.mbtiles"
+    },
+    "landcover": {
+      "mbtiles": "landcover.mbtiles"
+    },
+    "terrain": {
+      "mbtiles": "terrain.mbtiles"
+    }
+  }
+}

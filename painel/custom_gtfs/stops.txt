@@ -1,0 +1,30 @@
+stop_id,stop_name,stop_lat,stop_lon
+31,Geofísica - S206,-5.841584,-35.194988
+54,Bilac de Farias - S190,-5.843799,-35.19986
+42,Laboratório de Petróleo - S187,-5.84386,-35.197107
+48,Rebaixamento - S185,-5.842246,-35.205941
+C&T,Escola de Ciências e Tecnologia,-5.843595,-35.19981
+60,Júlio Barata - S214,-5.832006,-35.204292
+61,Residência Universitária - S215,-5.832112,-35.204532
+16,Reitoria - S201,-5.838626,-35.201634
+52,NEI - S196,-5.837918,-35.206316
+53,Orquídeas - S191,-5.84242,-35.203236
+26,DEART - S200,-5.83592,-35.21109
+20,ETE UFRN - S202,-5.838502,-35.201411
+21,Editora Universitária - S195,-5.838308,-35.205432
+22,Santos Dumont - S193,-5.840961,-35.204013
+44,Centro de Biociências - S192,-5.842091,-35.203193
+45,NUPLAN - S194,-5.839287,-35.204652
+40,Setor II - S207,-5.839731,-35.195661
+41,Geologia - S205,-5.841738,-35.195209
+1,Piscinas - S211,-5.834344,-35.200848
+RU,Terminal do Campus Universitário,-5.833506,-35.202781
+2,Setor I - S209,-5.837442,-35.197232
+59,Fisioterapia - S212,-5.83408,-35.200893
+17,Departamento de Educação Física - S204,-5.836503,-35.201884
+19,Residência da Pós-Graduação - S203,-5.836573,-35.201911
+30,Luciano Saldanha - S188,-5.844047,-35.197372
+58,Setor V - S210,-5.837252,-35.197069
+32,Instituto de Física - S208,-5.839508,-35.195488
+12,Igreja de Mirassol - S186,-5.843065,-35.207464
+VD,Circular da UFRN - S266,-5.84192,-35.209554

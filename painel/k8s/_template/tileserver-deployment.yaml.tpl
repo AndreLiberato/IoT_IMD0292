@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tileserver
+spec:
+  selector:
+    matchLabels:
+      app: tileserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tileserver
+    spec:
+      initContainers:
+        - name: init
+          image: ghcr.io/headwaymaps/tileserver-init:${HEADWAY_CONTAINER_TAG}
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: tileserver-volume
+              mountPath: /data
+          env:
+            - name: HEADWAY_AREA
+              value: area
+            - name: TERRAIN_ARTIFACT_DEST
+              value: /data/terrain.mbtiles
+            - name: TERRAIN_ARTIFACT_SOURCE
+              valueFrom:
+                configMapKeyRef:
+                  name: deployment-config
+                  key: terrain-source-url
+            - name: LANDCOVER_ARTIFACT_DEST
+              value: /data/landcover.mbtiles
+            - name: LANDCOVER_ARTIFACT_SOURCE
+              valueFrom:
+                configMapKeyRef:
+                  name: deployment-config
+                  key: landcover-source-url
+            - name: AREAMAP_ARTIFACT_DEST
+              value: /data/area.mbtiles
+            - name: AREAMAP_ARTIFACT_SOURCE
+              valueFrom:
+                configMapKeyRef:
+                  name: deployment-config
+                  key: areamap-source-url
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              memory: 100Mi
+      containers:
+        - name: tileserver
+          image: ghcr.io/headwaymaps/tileserver:${HEADWAY_CONTAINER_TAG}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: tileserver-volume
+              mountPath: /data
+          env:
+            - name: HEADWAY_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: deployment-config
+                  key: public-url
+            - name: HEADWAY_AREA
+              value: area
+            - name: PORT
+              value: "8000"
+          resources:
+            limits:
+              memory: 500Mi
+            requests:
+              memory: 200Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            failureThreshold: 10
+      volumes:
+        - name: tileserver-volume
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                resources:
+                  requests:
+                    storage: 200Gi
